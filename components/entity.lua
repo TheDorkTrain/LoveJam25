@@ -12,20 +12,27 @@ function Entity:new(x, y, image_path)
 end
 
 function Entity:checkCollision(e)
-    return self.x + self.width +50 > e.x
-    and self.x < e.x + e.width +50
-    and self.y + self.height+60 > e.y
-    and self.y < e.y + e.height +50
+    return self.x + self.width +30 > e.x
+    and self.x + 20< e.x + (e.width*60)
+    and self.y + self.height+40 > e.y
+    and self.y +20 < e.y + (e.height*60)
 end
 
 
 function Entity:update(dt)
+    if not self.last then
+        self.last = {
+            x = self.x,
+            y = self.y
+        }
+    end
+    
     self.last.x = self.x
     self.last.y = self.y
 end
 
 function Entity:resolveCollision(e)
-    if self:checkCollision(e) then
+    if e and self:checkCollision(e) then
         self.x = self.last.x
         self.y = self.last.y
     end
