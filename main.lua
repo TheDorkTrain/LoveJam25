@@ -1,18 +1,21 @@
 require ("assets")
- location = "menu"
+ location = "game"
 
 function love.load()
 
     map = Map
     map:load()
 
-    items = {pearlItem, pearlItem2, pearlItem3 }
-    player = Player(-71, 2673)
+    items = {pearlItem, pearlItem2, pearlItem3, pearlItem4 }
+    -- player = Player(300, 1873)
+    player = Player(710, 1273)
     -- tile = Tile(200, 100)
 
     start = Button("start", 300, 350, 100, 50, "Start Game")
     close = Button("close", 450, 350, 100, 50, "Close Game")
     press = Button("press", 350, 450, 125, 50, "Click to Continue")
+
+    gatherPoints = {standRadius, altar1, altar2, altar3}
 
     score = 0
     gameTime = 31
@@ -63,12 +66,15 @@ function love.update(dt)
     runAnimation(dt)
     player:update(dt)
     player:resolveCollision(stand)
+    player:resolveCollision(altar)
     Tile:update(dt)
     pearlItem:update(dt)
 
     for i, item in ipairs(items) do
         item:update(dt)
     end
+
+
 
     
 end
@@ -88,9 +94,14 @@ end
 
     love.graphics.setColor(shine)  -- Semi-transparent red
 
+
+    
 love.graphics.translate(-player.x + 400, -player.y + 300)
 
 Map:draw()
+
+stand:draw()
+altar:draw()
 
 if show == "red" then
     altar:draw()
@@ -110,28 +121,29 @@ if player.direction2 == "down" then
     end
 end
 
+for i, point in ipairs(gatherPoints) do
+    point:draw()
+end
 
 -- love.graphics.setColor(1, 0, 0, 1)
 -- love.graphics.rectangle("fill", standRadius.x, standRadius.y, standRadius.width+60, standRadius.height+60)
 -- love.graphics.setColor(1, 1, 1)
 
-stand:draw()
-
 
 love.graphics.translate(player.x - 400, player.y - 300)
 
 -- Print Scoreboard
--- love.graphics.setColor(1, 1, 1)
--- love.graphics.rectangle("fill", 25, 150, 200, 400)
--- love.graphics.setColor(1, .5, 0)
--- love.graphics.print( "Player X" , 50, 200)
--- love.graphics.print( player.x , 100, 200)
--- love.graphics.print( "Player Y:" , 50, 250)
--- love.graphics.print( player.y, 125, 250)
--- love.graphics.print( "Stand Width" , 50, 400)
--- love.graphics.print( standRadius.width , 100, 450)
--- love.graphics.print( "Stand Height:" , 50, 500)
--- love.graphics.print( standRadius.height, 125, 550)
+love.graphics.setColor(1, 1, 1)
+love.graphics.rectangle("fill", 25, 150, 200, 400)
+love.graphics.setColor(1, .5, 0)
+love.graphics.print( "Player X" , 50, 200)
+love.graphics.print( player.x , 100, 200)
+love.graphics.print( "Player Y:" , 50, 250)
+love.graphics.print( player.y, 125, 250)
+love.graphics.print( "show" , 50, 400)
+love.graphics.print( show , 100, 450)
+love.graphics.print( "Stand Height:" , 50, 500)
+love.graphics.print( standRadius.height, 125, 550)
 
 
 

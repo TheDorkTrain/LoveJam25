@@ -1,6 +1,6 @@
 Item = Object:extend()
 
-function Item:new(imagepath, type, x, y, z)
+function Item:new(imagepath, name, type, x, y, z)
     if z ==nil then
         z = 0
     end
@@ -13,6 +13,7 @@ function Item:new(imagepath, type, x, y, z)
     self.pickup = false
     self.carried = false
     self.type = type
+    self.name = name
 
 end
 
@@ -32,27 +33,44 @@ end
 
 function Item:draw()
     -- love.graphics.rectangle("fill",  self.x, self.y, self.width*60 , self.height*60) 
-    if self.type == "redPrl" then
-        love.graphics.setColor(1, 0, 0, 1)  -- Semi-transparent red
-    love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
-    love.graphics.setColor(shine)  
-    end
-    if self.type == "grnPrl" then
-        love.graphics.setColor(0, 1, 0, 1)  -- Semi-transparent red
-    love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
-    love.graphics.setColor(shine)  
-    end
-    if self.type == "bluPrl" then
-        love.graphics.setColor(0, 0, 1, 1)  -- Semi-transparent red
-    love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
-    love.graphics.setColor(shine)  
-    end
-    if self.type == "stand" then
-        love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
-    end
 
-    if self.type == "altar" then
-        love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
-    end
+    if show == "red" or "blu" or "grn"  then
+        if self.type == "redPrl" then
+            love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
+            end
+            if self.type == "grnPrl" then
+            love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
+            end
+            if self.type == "bluPrl" then
+            love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
+            end
+        end
+
+if show == "none" then 
+if self.type == "redPrl" then
+    love.graphics.setColor(1, 0.639, 0.329, 1) 
+love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
+love.graphics.setColor(shine)  
+end
+if self.type == "grnPrl" then
+    love.graphics.setColor(0.329, 1, 0.557, 1) 
+love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
+love.graphics.setColor(shine)  
+end
+if self.type == "bluPrl" then
+    love.graphics.setColor(0.329, 0.847, 1, 1) 
+love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
+love.graphics.setColor(shine)  
+end
+end
+
+
+
+if self.type == "stand" then
+    love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
+end
+if self.type == "altar" then
+    love.graphics.draw(self.image, self.x, self.y, self.scale, self.width/2, self.height)
+end
 
 end

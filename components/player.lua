@@ -5,7 +5,9 @@ shield = love.graphics.newImage("assets/images/character/shield.png")
 
 stepsfx = love.audio.newSource("assets/audio/footstep.wav", "static")
 shieldsfx = love.audio.newSource("assets/audio/shield.wav", "static")
-stepsfx:setVolume(0.25)
+idlesong = love.audio.newSource("assets/audio/idlesong.wav", "static")
+idlesong:setVolume(0.15)
+stepsfx:setVolume(0.50)
 
 function Player:new(x, y)
     Player.super.new(self, x, y, "assets/images/character/hero.png")
@@ -84,18 +86,43 @@ function Player:update(dt)
             if player.holding == "true" then
                 for i, item in ipairs(items) do
                     if pickupDistance(self, item) then
-                        if pickupDistance(item, standRadius) then
-                            item.x = stand.x + 30
-                            item.y = stand.y - 25
+                        -- Find the closest point that meets requirements
+                        local closestPoint = nil
+                        local minDistance = math.huge
+                        
+                        for j, point in ipairs(gatherPoints) do
+                            if point.hold == "empty" and pickupDistance(self, point) and item.name == point.cost then
+                                -- Calculate distance between player and this point
+                                local dx = self.x - point.x
+                                local dy = self.y - point.y
+                                local distance = math.sqrt(dx * dx + dy * dy)
+                                
+                                -- If this point is closer than the current closest
+                                if distance < minDistance then
+                                    minDistance = distance
+                                    closestPoint = point
+                                end
+                            end
+                        end
+                        
+                        -- If we found a valid point, use it
+                        if closestPoint then
+                            item.x = closestPoint.x + 40
+                            item.y = closestPoint.y
                             item.pickup = false
                             item.carried = false
-                            changeShine(item.type)
+                            if closestPoint.name == "stand" then
+                                changeShine(item.type)
+                            end
                             self.action = "throw"
                             self.holding = "false"
                             -- Add cooldown after putting down an item
                             self.actionCooldown = 0.5 -- Adjust timing as needed (0.5 seconds)
-                        end
-                        if not pickupDistance(item, standRadius) then
+                            closestPoint.hold = "full"
+                        else
+                            -- If no valid points found, just drop the item near the player
+                            item.x = self.x + 20  -- Adjust offset as needed
+                            item.y = self.y + 20  -- Adjust offset as needed
                             item.pickup = false
                             item.carried = false
                             self.action = "throw"
@@ -131,20 +158,25 @@ function Player:update(dt)
                 
                 -- If we found an item in range, pick it up
                 if closestItem then
-                    if pickupDistance(self, standRadius) then
+                    for i, point in ipairs(gatherPoints) do
+                    if pickupDistance(self, point) then
                         closestItem.pickup = true
                         closestItem.carried = true
                         self.holding = "true"
+                        if point.name == "stand" then
                         changeShine("none")
+                        end
+                        point.hold = "empty"
                         -- Add cooldown after picking up an item
                         self.actionCooldown = 0.5 -- Adjust timing as needed
-                    elseif not pickupDistance(self, standRadius) then
+                    elseif not pickupDistance(self, point) then
                         closestItem.pickup = true
                         closestItem.carried = true
                         self.holding = "true"
                         -- Add cooldown after picking up an item
                         self.actionCooldown = 0.5 -- Adjust timing as needed
                     end
+                end
                 else
                     self.action = "action"
                 end
@@ -177,19 +209,23 @@ function Player:keyreleased(key)
     if key == "space" then
           self.action = "false"
           self.walk = "false"
+          idlesong:stop()
     end
     end
         
 
 function Player:draw()
+    
     love.graphics.setColor(shine)
 
     if self.action == "action" then
          if self.direction1 == "right" then
+            idlesong:play()
          love.graphics.draw(playerSheet, waveFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
     end
 
     if self.direction1 == "left" then
+        idlesong:play()
         love.graphics.draw(playerSheet, waveFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
     end
 
