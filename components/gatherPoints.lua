@@ -1,7 +1,7 @@
 Gatherpoint = Object:extend()
 
-function Gatherpoint:new( name, x, y, width, height, cost)
-    local padding = 120
+function Gatherpoint:new( name, x, y, width, height, cost, answer)
+    local padding = 100
 
     if z ==nil then
         z = 0
@@ -12,15 +12,20 @@ function Gatherpoint:new( name, x, y, width, height, cost)
     if height ==nil then
         height = 0
     end
+    if answer ==nil then
+        answer = false
+    end
 
     zy = z * 2
     self.x = x - 40
     self.y = y - 40
     self.width =  width + padding
-    self.height = height + padding
+    self.height = height + padding 
     self.hold = "empty"
     self.cost = cost
     self.name = name
+    self.goal ="empty"
+    self.answer = answer
 
 end
 

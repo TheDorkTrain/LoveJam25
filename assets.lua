@@ -1,6 +1,18 @@
-require ("components/spawnTimer")
+-- require ("components/spawnTimer")
+tinyF = love.graphics.newFont("assets/Bestime.ttf", 10)
+smallF = love.graphics.newFont("assets/Bestime.ttf", 20)
+mediumF = love.graphics.newFont("assets/Bestime.ttf", 36)
+largeF = love.graphics.newFont("assets/Bestime.ttf", 50)
+crabIcon = love.graphics.newImage("assets/images/character/crab.png")
+
+menuSong = love.audio.newSource("assets/audio/menu.mp3", "static")
+daySong = love.audio.newSource("assets/audio/day.mp3", "static")
+nightSong = love.audio.newSource("assets/audio/night.mp3", "static")
+
 require("components/playerAnimations")
+require("components/promptAnimations")
  Map =  require "components/map"
+ Prompts = require "components/prompts"
  Menu = require "components/menu"
  Intro = require "components/intro"
 
@@ -9,6 +21,22 @@ require("components/playerAnimations")
  shine = {1, 1, 1, 1} 
 
  show = "none"
+
+ function soundtrack()
+    if location == "game" and phase == "Day" then
+        nightSong:stop()
+        menuSong:stop()  
+        daySong:play()       
+    elseif location == "game" and phase == "Night" then
+        daySong:stop()
+        menuSong:stop()      
+        nightSong:play()       
+    else
+        daySong:stop()
+        nightSong:stop()  
+            menuSong:play()
+    end
+ end
 
  function changeShine(e) 
     if e == "redPrl" then
@@ -36,16 +64,13 @@ end
     require "components/item"
     require "components/gatherPoints"
     require "components/pearlSpawn"
+    require "components/dayTimer"
+    require "components/dailyGoal"
 
     stand = "assets/images/props/stand.png"
     altar = "assets/images/props/altar.png"
-    
     pearl = "assets/images/props/pearl.png"
-    pearlItem = Item(pearl, "pearl", "redPrl", -201, 2808)
-    pearlItem2 = Item(pearl, "pearl", "grnPrl", -251, 2808)
-    pearlItem3 = Item(pearl, "pearl", "bluPrl", -201, 2608)
-    pearlItem4 = Item(pearl, "pearl", "bluPrl", 550, 1300)
-    pearlItem5 = Item(pearl, "pearl", "bluPrl", 550, 1300)
+    sunImage = love.graphics.newImage("assets/images/props/sun.png")
 
     stand = Item(stand, "stand", "stand", 100, 2000 , 1)
 
@@ -62,7 +87,6 @@ end
     --     self.height = (e.height + radiusPadding)
     -- end
     standRadius = Gatherpoint("stand", 130, 2040, 0, 0, "pearl")
-    altar1 = Gatherpoint("altar", 720, 1180, 0, 0, "pearl")
-    altar2 = Gatherpoint("altar", 820, 1180, 0, 0, "pearl")
-    altar3 = Gatherpoint("altar", 920, 1180, 0, 0, "pearl")
+
+    
 
