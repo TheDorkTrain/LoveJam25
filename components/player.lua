@@ -23,6 +23,8 @@ function Player:new(x, y)
     self.width = 1
     self.height = 1
     self.speed = 0
+    self.unlock = "no"
+    self.block = false
 end
 
 function pickupDistance(a, b)
@@ -46,6 +48,11 @@ function pickupDistance(a, b)
 end
 function Player:update(dt)
     Player.super.update(self, dt)
+
+    if player.unlock == "shield" then
+        activeSheet = shieldSheet
+    end
+
     
     -- Update cooldown timer if it exists
     if self.actionCooldown then
@@ -87,7 +94,7 @@ function Player:update(dt)
             if player.holding == "true" then
                 -- Find the item the player is currently holding
                 local heldItem = nil
-                for i, item in ipairs(pearlItems) do
+                for i, item in ipairs(pickupItems) do
                     if item.carried then
                         heldItem = item
                         break
@@ -101,7 +108,7 @@ function Player:update(dt)
                     local minDistance = math.huge
                     
                     for j, point in ipairs(gatherPoints) do
-                        if point.hold == "empty" and pickupDistance(self, point) and heldItem.name == point.cost then
+                        if point.hold == "empty" and pickupDistance(self, point) and heldItem.name == point.cost and point.spawn == true then
                             -- Calculate distance between player and this point
                             local dx = self.x - point.x
                             local dy = self.y - point.y
@@ -117,8 +124,15 @@ function Player:update(dt)
                     
                     -- If we found a valid point, use it
                     if closestPoint then
+                        if closestPoint.name == "altar" or closestPoint.name == "stand" then
                         heldItem.x = closestPoint.x + 40
                         heldItem.y = closestPoint.y
+                        closestPoint.hold = "full"
+                        else
+                        heldItem.x = -1000000
+                        heldItem.y = -1000000
+                        end
+                        consolelog = closestPoint.name
                         heldItem.pickup = false
                         heldItem.carried = false
                         if closestPoint.name == "stand" then
@@ -128,8 +142,9 @@ function Player:update(dt)
                         self.holding = "false"
                         -- Add cooldown after putting down an item
                         self.actionCooldown = 0.5 -- Adjust timing as needed (0.5 seconds)
-                        closestPoint.hold = "full"
+
                         closestPoint.goal = heldItem.type
+                        closestPoint.total = closestPoint.total + 1
                         if closestPoint.answer then
                             if closestPoint.answer == closestPoint.goal then
                                 rightfx:play()
@@ -169,7 +184,7 @@ function Player:update(dt)
                             closestPoint = point
                             
                             -- Find the item at this gather point
-                            for j, item in ipairs(pearlItems) do
+                            for j, item in ipairs(pickupItems) do
                                 -- Check if item is near this point (not carried and within reasonable distance)
                                 local itemDx = item.x - (point.x + 40) -- Accounting for the +40 offset when placing
                                 local itemDy = item.y - point.y
@@ -201,8 +216,8 @@ function Player:update(dt)
                     local closestItem = nil
                     local closestDistance = math.huge
                     
-                    for i, item in ipairs(pearlItems) do
-                        if pickupDistance(self, item) and not item.carried then
+                    for i, item in ipairs(pickupItems) do
+                        if pickupDistance(self, item) and item.spawn == true and not item.carried then
                             -- Calculate the actual distance between player and item centers
                             local playerCenterX = self.x + (self.width / 2)
                             local playerCenterY = self.y + (self.height / 2)
@@ -260,6 +275,7 @@ function Player:keyreleased(key)
           self.action = "false"
           self.walk = "false"
           idlesong:stop()
+          player.block = false
     end
     end
         
@@ -270,23 +286,39 @@ function Player:draw()
 
     if self.action == "action" then
          if self.direction1 == "right" then
+            if player.unlock == "shield" then
+                player.block = true
+                love.graphics.setColor(0.502, 0.071, 0.502)
+                love.graphics.circle("fill", player.x+20, player.y+20, 40)
+                love.graphics.draw(activeSheet, waveFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+                love.graphics.setColor(0, 0, 0)
+            else
             idlesong:play()
-         love.graphics.draw(playerSheet, waveFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+         love.graphics.draw(activeSheet, waveFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+            end
     end
 
     if self.direction1 == "left" then
+        if player.unlock == "shield" then
+            player.block = true
+            love.graphics.setColor(0.502, 0.071, 0.502)
+            love.graphics.circle("fill", player.x+20, player.y+20, 40)
+            love.graphics.draw(activeSheet, waveFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
+            love.graphics.setColor(0, 0, 0)
+        else
         idlesong:play()
-        love.graphics.draw(playerSheet, waveFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
+        love.graphics.draw(activeSheet, waveFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
+        end
     end
 
     end
 
     if self.action == "throw" then
         if self.direction1 == "right" then
-        love.graphics.draw(playerSheet, throwFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+        love.graphics.draw(activeSheet, throwFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
    end
    if self.direction1 == "left" then
-    love.graphics.draw(playerSheet, throwFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
+    love.graphics.draw(activeSheet, throwFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
 end
 end
 
@@ -296,30 +328,30 @@ if self.action == "false" then
     if self.holding == "true" then 
         if self.walk =="false" then
             if self.direction1 == "right" and self.direction2 == "down" then
-                love.graphics.draw(playerSheet, carryIdleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+                love.graphics.draw(activeSheet, carryIdleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
                 end
                 if self.direction1 == "left" and self.direction2 == "down"  then
-                    love.graphics.draw(playerSheet, carryIdleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                    love.graphics.draw(activeSheet, carryIdleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
                 end
                 if self.direction1 == "right" and self.direction2 == "up" then
-                    love.graphics.draw(playerSheet, upCarryIdleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+                    love.graphics.draw(activeSheet, upCarryIdleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
                     end
                     if self.direction1 == "left" and self.direction2 == "up"  then
-                        love.graphics.draw(playerSheet, upCarryIdleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                        love.graphics.draw(activeSheet, upCarryIdleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
                     end
         end
         if self.walk == "true" then
             if self.direction1 == "right" and self.direction2 == "down" then
-                love.graphics.draw(playerSheet, carryWalkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+                love.graphics.draw(activeSheet, carryWalkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
                 end
                 if self.direction1 == "left" and self.direction2 == "down"  then
-                    love.graphics.draw(playerSheet, carryWalkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                    love.graphics.draw(activeSheet, carryWalkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
                 end
                 if self.direction1 == "right" and self.direction2 == "up" then
-                    love.graphics.draw(playerSheet, upCarryWalkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+                    love.graphics.draw(activeSheet, upCarryWalkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
                     end
                     if self.direction1 == "left" and self.direction2 == "up"  then
-                        love.graphics.draw(playerSheet, upCarryWalkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                        love.graphics.draw(activeSheet, upCarryWalkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
                     end
         end
     end
@@ -329,30 +361,30 @@ if self.action == "false" then
     if self.holding == "false" then
     if self.walk =="false" then
         if self.direction1 == "right" and self.direction2 == "down" then
-            love.graphics.draw(playerSheet, idleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+            love.graphics.draw(activeSheet, idleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
             end
             if self.direction1 == "left" and self.direction2 == "down"  then
-                love.graphics.draw(playerSheet, idleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                love.graphics.draw(activeSheet, idleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
             end
             if self.direction1 == "right" and self.direction2 == "up" then
-                love.graphics.draw(playerSheet, upIdleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+                love.graphics.draw(activeSheet, upIdleFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
                 end
                 if self.direction1 == "left" and self.direction2 == "up"  then
-                    love.graphics.draw(playerSheet, upIdleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                    love.graphics.draw(activeSheet, upIdleFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
                 end
     end
     if self.walk == "true" then
         if self.direction1 == "right" and self.direction2 == "down" then
-            love.graphics.draw(playerSheet, walkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+            love.graphics.draw(activeSheet, walkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
             end
             if self.direction1 == "left" and self.direction2 == "down"  then
-                love.graphics.draw(playerSheet, walkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                love.graphics.draw(activeSheet, walkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
             end
             if self.direction1 == "right" and self.direction2 == "up" then
-                love.graphics.draw(playerSheet, upWalkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+                love.graphics.draw(activeSheet, upWalkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
                 end
                 if self.direction1 == "left" and self.direction2 == "up"  then
-                    love.graphics.draw(playerSheet, upWalkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
+                    love.graphics.draw(activeSheet, upWalkFrames[math.floor(currentFrame)], (self.x+55), self.y, self.scale, (self.width*-1), self.height)
                 end
     end
 end
@@ -372,16 +404,16 @@ end
 
 
     -- if self.direction == "right" then
-    --     love.graphics.draw(playerSheet, walkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+    --     love.graphics.draw(activeSheet, walkFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
     -- end
     -- if self.direction == "left" then
-    --     love.graphics.draw(playerSheet, walkFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
+    --     love.graphics.draw(activeSheet, walkFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
     -- end
     -- if self.direction == "idleleft" then
-    --     love.graphics.draw(playerSheet, idleFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
+    --     love.graphics.draw(activeSheet, idleFrames[math.floor(currentFrame)], (self.x+50), self.y, self.scale, (self.width*-1), self.height)
     -- end
     -- if self.direction == "action" then
-    --     love.graphics.draw(playerSheet, waveFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
+    --     love.graphics.draw(activeSheet, waveFrames[math.floor(currentFrame)], self.x, self.y, self.scale, self.width, self.height)
     -- end
     
 end

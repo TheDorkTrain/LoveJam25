@@ -1,6 +1,6 @@
 Item = Object:extend()
 
-function Item:new(imagepath, name, type, x, y, z)
+function Item:new(imagepath, name, type, x, y, z, spawn)
     if z ==nil then
         z = 0
     end
@@ -8,12 +8,14 @@ function Item:new(imagepath, name, type, x, y, z)
     self.x = x
     self.y = y
     self.image = love.graphics.newImage(imagepath)
-    self.width = (self.image:getWidth() * .01 + z)
+    self.type = type
+    self.width = (self.image:getWidth() * .01 + z )
     self.height = (self.image:getHeight() * .01 + z)
     self.pickup = false
     self.carried = false
-    self.type = type
     self.name = name
+    self.destroy = false
+    self.spawn = spawn
 
 end
 
@@ -66,9 +68,14 @@ end
 
 
 
-if self.type == "stand" then
+if self.type == "stand" or self.type == "tree" then
     love.graphics.draw(self.image, self.x, self.y, self.scale, self.width, self.height)
 end
+
+if self.type == "log" then
+    love.graphics.draw(self.image, self.x, self.y, self.scale, self.width/2, self.height/2)
+end
+
 if self.type == "altar" then
     love.graphics.draw(self.image, self.x, self.y, self.scale, self.width/2, self.height)
 end

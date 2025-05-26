@@ -79,6 +79,18 @@ function Entity:resolveCollision(e)
     end
 end
 
+function Entity:collectCheck(e)
+    if e and self:checkCollision(e) then
+        if e.unlock == "shield" then
+            playPower()
+            self.unlock = "shield"
+        end
+    activeText = true
+    loadedText = table.concat(e.text, "\n")
+     e.spawn = false
+    end
+end
+
 function Entity:resolveBarrier(e)
     if e and self:checkbarrier(e) then
         self.x = self.last.x

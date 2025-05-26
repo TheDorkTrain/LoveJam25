@@ -21,7 +21,10 @@ function Button:mousepressed(x, y, button)
 end
 
 function Button:draw()
+    love.graphics.setFont(mediumF)
     love.graphics.setColor(1, 1, 1)
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-        love.graphics.print(self.text, self.x+15, self.y+15)
+        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.print(self.text, self.x+15, self.y+5)
+        love.graphics.setColor(1, 1, 1)
 end

@@ -1,7 +1,12 @@
 local Menu ={}
 
+
 function Menu:draw()
-    love.graphics.print("Every Night the Crab Attacks", 150, 300, 0, 3, 3)
+    love.graphics.draw(titleScreen, 0, 0, 0, .29, .29)
+    love.graphics.setFont(mediumF)
+    love.graphics.setColor(1, .5, 0)
+    love.graphics.print("Every Night the Crab Attacks", 10, 400)
+    love.graphics.setColor(1, 1, 1)
 start:draw()
 close:draw()
 -- love.graphics.rectangle("line", 100, 150, 100, 50)
