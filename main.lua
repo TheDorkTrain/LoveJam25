@@ -2,30 +2,30 @@ require ("assets")
  location = "menu"
 
 function love.load()
-    consolelog = "test"
 
     Map:load()
     randomizeValues()
     randomizeSpawn()
 
-    -- player = Player(300, 1873)
-    -- player = Player(800, 1300)
+ 
     player = Player(-454, 2793)
     -- tile = Tile(200, 100)
 
     start = Button("start", 100, 450, 275, 50, "Start Game")
     close = Button("close", 100, 525, 275, 50, "Close Game")
     press = Button("press", 300, 475, 350, 50, "Click to Continue")
-    winPress = Button("press", 150, 450, 250, 50, "Play Again")
+    winPress = Button("press", 125, 450, 250, 50, "Play Again")
+    nextButt = Button("debug1", 575, 500, 125, 50, "Next")
+    prevButt = Button("debug2", 25, 500, 125, 50, "Prev")
 
     gatherPoints = {standRadius, altar1, altar2, altar3, hiddenPoint1, hiddenPoint2, hiddenPoint3, dock}
 
-    pickupItems = {pearlItem, pearlItem2, pearlItem3, pearlItem4, pearlItem5, pearlItem6, pearlItem7, pearlItem8, pearlItem9, log1, log2, log3}
+    pickupItems = {log1, log2, log3, log4, pearlItem, pearlItem2, pearlItem3, pearlItem4, pearlItem5, pearlItem6, pearlItem7, pearlItem8}
+pickupNames = {"log1", "log2", "log3", "log4", "pearlItem", "pearlItem2", "pearlItem3", "pearlItem4", "pearlItem5", "pearlItem6", "pearlItem7", "pearlItem8"}
 
     collectionItems = {asteroidCrash, bottle1, bottle2, bottle3, bottle4, bottle5}
 
     trees = {tree1, tree2, tree3, tree4} 
-    logs = {log1, log2, log3, log4}
 
     score = 0
     gameTime = 31
@@ -69,6 +69,14 @@ function love.mousepressed(x, y, button)
             location = "menu"
         end
     end
+    if debugMode == true then
+        if nextButt:mousepressed(x, y, button) and debugMenu < 4 then
+            debugMenu = debugMenu + 1
+        elseif prevButt:mousepressed(x,y, button) and debugMenu > 1 then
+            debugMenu = debugMenu - 1
+        end
+    end
+
 end
 
 function love.keyreleased(key)
@@ -79,6 +87,12 @@ animations()
 promptAnimations()
 
 function love.update(dt)
+     if love.keyboard.isDown("p") then
+        debugMode = true
+     else
+        debugMode = false
+     end
+
     soundtrack()
     Map:update(dt)
     runAnimation(dt)
@@ -89,22 +103,23 @@ function love.update(dt)
     player:update(dt)
     player:resolveCollision(stand)
     player:resolveCollision(altar)
-    
 
+
+    for i, tree in ipairs(trees) do
+        if tree.destroy == false then
+            player:resolveCollision(tree)
+        elseif tree.destroy == true and pickupItems[i] then
+            pickupItems[i].spawn = true  
+        end
+    end
+
+    
     for i, item in ipairs(collectionItems) do
         if item.spawn == true then
             player:collectCheck(item)
         end
     end
 
-
-    for i, tree in ipairs(trees) do
-        if tree.destroy == false then
-            player:resolveCollision(tree)
-        elseif tree.destroy == true and logs[i] then
-            logs[i].spawn = true  -- Note: using = not ==
-        end
-    end
 
     Tile:update(dt)
     pearlItem:update(dt)
@@ -191,7 +206,7 @@ function love.draw()
             if y > -30 and y < love.graphics.getHeight() + 30 then
                 local textWidth = font:getWidth(line)
                 local x = 375 -- Center the text
-                love.graphics.setFont(tinyF)
+                love.graphics.setFont(debugF)
                 
                 -- Make title lines bigger
                 if line == "GAME TITLE" or (line ~= "" and i <= 3) then
@@ -201,7 +216,6 @@ function love.draw()
                 end
             end
         end
-        winPress:draw()
     end
 
     if location == "menu" then
@@ -217,7 +231,7 @@ if location == "dayChange" then
         love.graphics.print( "Day " .. day , 325, 300)
         love.graphics.print( phase , 325, 250)
         love.graphics.setFont(smallF)
-        love.graphics.print( "The Crab is pleased with your offering" , 175, 325)
+        love.graphics.print( "The Crab is pleased with your offering" , 175, 350)
     elseif phase =="Day" then
         love.graphics.setFont(largeF)
     love.graphics.print( "Day " .. day , 325, 300)
@@ -325,8 +339,6 @@ love.graphics.setColor(0, 0, 0)
 love.graphics.setFont(mediumF)
 love.graphics.print( "Day " , 50, 10)
 love.graphics.print( day , 75, 60)
--- love.graphics.print( "Console Log:" , 50, 100)
--- love.graphics.print( show , 75, 150)
 love.graphics.line(5,5, 5, 175)
 love.graphics.setColor(1, .984, 0)
 love.graphics.circle("fill", 5, dayTimer, 10, 10)
@@ -358,28 +370,9 @@ if activeText then
     love.graphics.print("Press Action to Close", 250, 400)
 end
 
--- love.graphics.setFont(smallF)
--- love.graphics.rectangle("fill", 25, 150, 250, 400)
--- love.graphics.setColor(1, .5, 0)
--- love.graphics.print( "Player X" , 50, 200)
--- love.graphics.print( player.x , 175, 200)
--- love.graphics.print( "Player Y:" , 50, 250)
--- love.graphics.print( player.y, 175, 250)
--- love.graphics.print( "Altar 1" , 50, 300)
--- love.graphics.print( altar1.goal , 175, 300)
--- love.graphics.print( "Value 1" , 50, 325)
--- love.graphics.print( value1, 175, 325)
--- love.graphics.print( "Value 2" , 50, 350)
--- love.graphics.print( value2, 175, 350)
--- love.graphics.print( "Value 3" , 50, 375)
--- love.graphics.print( value3, 175, 375)
--- love.graphics.print( " Answer 1 " , 50, 400)
--- love.graphics.print( altar1.answer, 175, 400)
--- love.graphics.print( " Answer 2 " , 50, 425)
--- love.graphics.print( altar2.answer, 175, 425)
--- love.graphics.print( " Answer 3 " , 50, 450)
--- love.graphics.print( altar3.answer, 175, 450)
-
+ if debugMode == true then
+Debug:draw()
+ end
 
 love.graphics.setColor(1, 0, 0, 0.5)
 -- love.graphics.circle("line", arm.x, arm.y, (arm.width * arm.scale * 2) + 50)

@@ -20,6 +20,7 @@ end
     dayTimer = 5
     phase = "Night"
     location = "dayChange"
+   
  end
 end
 
@@ -53,6 +54,7 @@ function dayChange(dt)
       elseif phase == "Day" then 
       location = "game"
       dayChangeTimer = 0
+        dailyReset()
       else
          location = "game"
          dayChangeTimer = 0

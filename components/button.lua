@@ -22,9 +22,17 @@ end
 
 function Button:draw()
     love.graphics.setFont(mediumF)
+    if debugMode == true then
+  love.graphics.setColor(0, 0, 0)
+        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print(self.text, self.x+15, self.y+5)
+        love.graphics.setColor(0, 0, 0)
+    else
     love.graphics.setColor(1, 1, 1)
         love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
         love.graphics.setColor(0, 0, 0)
         love.graphics.print(self.text, self.x+15, self.y+5)
         love.graphics.setColor(1, 1, 1)
+    end
 end

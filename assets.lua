@@ -1,5 +1,6 @@
 -- require ("components/spawnTimer")
 tinyF = love.graphics.newFont("assets/Bestime.ttf", 10)
+debugF = love.graphics.newFont("assets/Bestime.ttf", 15)
 smallF = love.graphics.newFont("assets/Bestime.ttf", 20)
 mediumF = love.graphics.newFont("assets/Bestime.ttf", 36)
 largeF = love.graphics.newFont("assets/Bestime.ttf", 50)
@@ -46,6 +47,7 @@ require("components/promptAnimations")
  Prompts = require "components/prompts"
  Menu = require "components/menu"
  Intro = require "components/intro"
+ Debug = require "components/debug"
 
  Object = require "components/classic"
 
@@ -120,6 +122,7 @@ end
     require "components/dailyGoal"
     require "components/boss"
     require "components/collect"
+
     ocean = love.graphics.newImage("assets/images/background/ocean.png")
 
     standImage = "assets/images/props/stand.png"
@@ -144,10 +147,10 @@ end
     tree3 = Item(tree, "tree", "tree", 2280, 1803, 2, true)
     tree4 = Item(tree, "tree", "tree", -264, 1612, 2, true)
 
-    log1 = Item(log, "log", "log", -400, 2300, 1.5, false)
-    log2 = Item(log, "log", "log", 676, 2678, 1.5, false)
-    log3 = Item(log, "log", "log", 2280, 1803, 1.5, false)
-    log4 = Item(log, "log", "log", -264, 1612, 1.5, false)
+    log1 = Item(log, "log", "log", -400, 2300, 1, false)
+    log2 = Item(log, "log", "log", 676, 2678, 1,  false)
+    log3 = Item(log, "log", "log", 2280, 1803, 1,  false)
+    log4 = Item(log, "log", "log", -264, 1612, 1,  false)
 
     asteroidCrash = Collect(asteroid, 3186, 2132, 1, shieldText, "shield", false)
     bottle1 = Collect(bottleImage, 350, 2842, .5, bottleText1, "none", true)
@@ -170,5 +173,5 @@ end
     -- end
     standRadius = Gatherpoint("stand", 130, 2040, 0, 0, "pearl", nil, true)
 
-    dock = Gatherpoint("dock", -500, 2793, 175, 175, "log")
+    dock = Gatherpoint("dock", -500, 2793, 175, 175, "log", nil, true)
 

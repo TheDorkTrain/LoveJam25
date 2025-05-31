@@ -24,6 +24,7 @@ function Player:new(x, y)
     self.height = 1
     self.speed = 0
     self.unlock = "no"
+    --  self.unlock = "shield"
     self.block = false
 end
 
@@ -145,6 +146,7 @@ function Player:update(dt)
 
                         closestPoint.goal = heldItem.type
                         closestPoint.total = closestPoint.total + 1
+                        if day == 1 then
                         if closestPoint.answer then
                             if closestPoint.answer == closestPoint.goal then
                                 rightfx:play()
@@ -152,6 +154,7 @@ function Player:update(dt)
                                 wrongfx:play()
                             end
                         end
+                    end
 
                     else
                         -- If no valid points found, just drop the item near the player

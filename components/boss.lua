@@ -18,7 +18,8 @@ function Boss:new(x, y)
     self.width = size
     self.height = size
     self.speed = 750
-    self.cooldown = 0
+    self.cooldown = nil  -- Changed from 0 to nil
+    self.stun = false
     self.centerX = self.x + Crab:getWidth()/2
     self.centerY = self.y + Crab:getHeight()/2
     
@@ -107,6 +108,7 @@ function Boss:createShockwave()
     self.shockwaveX = self.centerX
     self.shockwaveY = self.centerY + 100  -- Ground level
     self.state = "shockwave"
+    self.shockwaveHitPlayer = false  -- Reset hit flag for new shockwave
 end
 
 function Boss:updateShockwave(dt)
@@ -114,28 +116,34 @@ function Boss:updateShockwave(dt)
         self.shockwaveTimer = self.shockwaveTimer + dt
         self.shockwaveRadius = self.shockwaveRadius + self.shockwaveGrowthSpeed * dt
         
-        -- Check collision with player
-        if self:checkShockwaveCollision(player) then
+        -- Check collision with player (only check once per shockwave)
+        if self:checkShockwaveCollision(player) and not self.shockwaveHitPlayer then
+            self.shockwaveHitPlayer = true  -- Prevent multiple hits from same shockwave
+            
             if player.block == false then
-            location = "gameover"
+                location = "gameover"
             end
-            -- Example: player.health = player.health - 10
+            if player.block == true then
+                self.stun = true
+                self.cooldown = 5
+            end
         end
         
-        -- Check collision with items (assuming you have an items table)
-            for i, item in ipairs(trees) do
-                if self:checkShockwaveCollision(item) then
-                   item.destroy = true
-                    -- Handle item hit (you can customize this)
-                    -- Example: item:destroy() or table.remove(items, i)
-                end
+        -- Check collision with items
+        for i, item in ipairs(trees) do
+            if self:checkShockwaveCollision(item) then
+               item.destroy = true
             end
+        end
         
         -- End shockwave
         if self.shockwaveTimer >= self.shockwaveDuration or self.shockwaveRadius >= self.maxShockwaveRadius then
             self.shockwaveActive = false
             self.state = "idle"
-            self.cooldown = 0  -- Reset cooldown for next attack
+            -- DON'T reset cooldown here if stunned - let it run its course
+            if not self.stun then
+                self.cooldown = nil  -- Only reset if not stunned
+            end
         end
     end
 end
@@ -147,23 +155,23 @@ function Boss:checkShockwaveCollision(target)
     local dy = (target.y + (target.height or 32)/2) - self.shockwaveY
     local distance = math.sqrt(dx*dx + dy*dy)
     
-    -- Check if target is within shockwave radius (with some tolerance for ring thickness)
-    local ringThickness = 5
-    return distance <= self.shockwaveRadius and distance >= (self.shockwaveRadius - ringThickness)
+    -- Check if target is within shockwave radius (solid circle collision)
+    return distance <= self.shockwaveRadius
 end
 
 function Boss:update(dt)
     Boss.super.update(self, dt)
 
-    if self.cooldown then
+     if self.cooldown and self.cooldown > 0 then
         self.cooldown = self.cooldown - dt
         if self.cooldown <= 0 then
             self.cooldown = nil
+            self.stun = false  -- Reset stun when cooldown ends
         end
     end
 
     -- State machine
-    if self.state == "idle" and not self.cooldown then
+   if self.state == "idle" and not self.cooldown and not self.stun then
         self:startJump()
     elseif self.state == "jumping" then
         self:updateJump(dt)
@@ -187,14 +195,19 @@ function Boss:draw()
                           shockwave:getWidth()/2, shockwave:getHeight()/2)
         
         -- Option 2: Draw as circle ring (comment out the above and uncomment below if preferred)
-        -- love.graphics.setLineWidth(10)
-        -- love.graphics.circle("line", self.shockwaveX, self.shockwaveY, self.shockwaveRadius)
+        love.graphics.setLineWidth(10)
+        love.graphics.circle("line", self.shockwaveX, self.shockwaveY, self.shockwaveRadius)
     end
     
     -- Draw boss (elevated during jump)
+    if self.stun == true then
+        love.graphics.setColor(0, 0, 1, 1)
+        love.graphics.draw(Crab, self.x, self.y - self.jumpHeight, 0, self.width, self.height)
+         love.graphics.setColor(1, 1, 1, 1)
+    else
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.draw(Crab, self.x, self.y - self.jumpHeight, 0, self.width, self.height)
-    
+    end
     -- Debug visualization
     -- love.graphics.setColor(0.329, 0.847, 1, 1) 
     -- love.graphics.rectangle("fill", self.centerX, self.centerY - self.jumpHeight, 10, 10)
